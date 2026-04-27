@@ -23,7 +23,7 @@ const Home = () => {
   const [loadingWorks, setLoadingWorks] = useState(true);
   const [socialCategories, setSocialCategories] = useState<{name_bn: string, icon: string, description_bn: string}[]>([]);
   const [galleryImages, setGalleryImages] = useState<{id: string, title: string, image_path: string, type: string}[]>([]);
-  const { get, loading: contentLoading } = useHomeContent();
+  const { get } = useHomeContent();
 
   useEffect(() => {
     const fetchWorks = async () => {

@@ -3,9 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { 
   Search, 
   CheckCircle2, 
-  AlertCircle, 
   MapPin, 
-  User, 
   Phone,
   Calendar,
   Loader2,
@@ -21,6 +19,9 @@ interface Complaint {
   created_at: string;
   updated_at: string;
   gram_moholla: string;
+  upazila_id?: string;
+  union_id?: string;
+  ward_id?: string;
   problem_categories: { name_bn: string };
   upazilas: { name_bn: string };
   unions: { name_bn: string };

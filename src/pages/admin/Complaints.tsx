@@ -3,9 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { 
   Search, 
-  Filter, 
-  MoreVertical, 
-  CheckCircle2, 
   Clock, 
   AlertCircle, 
   MapPin, 
@@ -16,7 +13,9 @@ import {
   ExternalLink,
   X,
   Download,
-  FileText
+  FileText,
+  Image as ImageIcon,
+  MessageSquare
 } from 'lucide-react';
 
 interface Location {

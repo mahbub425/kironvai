@@ -178,7 +178,7 @@ const AdminDashboard = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <RechartsTooltip formatter={(value: number) => [value, 'টি অভিযোগ']} />
+                  <RechartsTooltip formatter={(value: any) => [value, 'টি অভিযোগ']} />
                   <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
               </ResponsiveContainer>
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
                   <RechartsTooltip 
                     cursor={{ fill: '#f8fafc' }}
-                    formatter={(value: number) => [value, 'টি অভিযোগ']}
+                    formatter={(value: any) => [value, 'টি অভিযোগ']}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
                   <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
                   <RechartsTooltip 
                     cursor={{ fill: '#f8fafc' }}
-                    formatter={(value: number) => [value, 'টি অভিযোগ']}
+                    formatter={(value: any) => [value, 'টি অভিযোগ']}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
                   <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />

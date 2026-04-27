@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Search, MapPin, Calendar, Clock, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import { Search, MapPin, Calendar, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Location {
   id: string;

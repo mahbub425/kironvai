@@ -18,7 +18,7 @@ import {
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [openMenu, setOpenMenu] = useState<Record<string, boolean>>({});
+
   const navigate = useNavigate();
   const location = useLocation();
 

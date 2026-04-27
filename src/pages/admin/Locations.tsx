@@ -7,9 +7,7 @@ import {
   Flag, 
   Edit2, 
   Trash2, 
-  Search, 
   Loader2, 
-  AlertCircle,
   X,
   Check
 } from 'lucide-react';
