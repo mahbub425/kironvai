@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #10b981; /* Emerald 500 */
+  --color-primary-dark: #059669; /* Emerald 600 */
+  --color-primary-light: #34d399; /* Emerald 400 */
+}
+
+@layer base {
+  :root {
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900;
+    font-family: 'Noto Sans Bengali', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-slate-900;
+  }
+}
+
+/* Custom styles for glassmorphism and animations */
+.glass {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+}
+
+.btn-primary {
+  @apply px-6 py-3 bg-primary text-white rounded-xl font-bold transition-all duration-300 hover:bg-primary-dark hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.btn-outline {
+  @apply px-6 py-3 border-2 border-primary text-primary rounded-xl font-bold transition-all duration-300 hover:bg-primary/5 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400;
+}
