@@ -13,9 +13,7 @@ import {
   ExternalLink,
   X,
   Download,
-  FileText,
-  Image as ImageIcon,
-  MessageSquare
+  FileText
 } from 'lucide-react';
 
 interface Location {
