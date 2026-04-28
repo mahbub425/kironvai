@@ -21,8 +21,16 @@ import AdminSettings from './pages/admin/Settings';
 import AdminHomeContent from './pages/admin/HomeContent';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import AdminLayout from './components/admin/AdminLayout';
+import { useEffect } from 'react';
+import { useSiteSettings } from './hooks/useSiteSettings';
 
 function App() {
+  const { siteTitle } = useSiteSettings();
+
+  useEffect(() => {
+    document.title = siteTitle;
+  }, [siteTitle]);
+
   return (
     <Routes>
       {/* Public Routes */}

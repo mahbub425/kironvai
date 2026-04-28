@@ -11,13 +11,17 @@ import {
   Settings, 
   LogOut, 
   Menu, 
+  X,
   ChevronRight,
   Tags,
   Globe
 } from 'lucide-react';
 
 const AdminLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= 1024;
+  });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,6 +71,14 @@ const AdminLayout = () => {
           </div>
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-800 rounded-lg lg:block hidden">
             <Menu size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            aria-label="মেনু বন্ধ করুন"
+          >
+            <X size={22} />
           </button>
         </div>
 

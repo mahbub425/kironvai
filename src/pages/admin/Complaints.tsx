@@ -13,7 +13,8 @@ import {
   ExternalLink,
   X,
   Download,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 interface Location {
@@ -49,6 +50,8 @@ const AdminComplaints = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState(isResolvedPage ? 'সমস্যার সমাধান করা হয়েছে' : 'all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Complaint | null>(null);
 
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
 
@@ -175,6 +178,34 @@ const AdminComplaints = () => {
       setSelectedComplaint(updatedComplaint);
     }
     setUpdatingId(null);
+  };
+
+  const openDeleteConfirm = (complaint: Complaint) => {
+    setDeleteTarget(complaint);
+  };
+
+  const handleDeleteComplaint = async () => {
+    if (!deleteTarget) return;
+
+    setDeletingId(deleteTarget.id);
+    const { error } = await supabase
+      .from('complaints')
+      .delete()
+      .eq('id', deleteTarget.id);
+
+    if (error) {
+      console.error(error);
+      window.alert(`অভিযোগ ডিলিট করা যায়নি: ${error.message}`);
+      setDeletingId(null);
+      return;
+    }
+
+    setComplaints(complaints.filter(c => c.id !== deleteTarget.id));
+    if (selectedComplaint?.id === deleteTarget.id) {
+      setSelectedComplaint(null);
+    }
+    setDeleteTarget(null);
+    setDeletingId(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -506,10 +537,18 @@ const AdminComplaints = () => {
                             className="text-xs bg-slate-50 border border-slate-200 rounded-lg p-1.5 outline-none focus:border-emerald-500 w-[140px]"
                             value={c.status}
                             onChange={(e) => handleStatusUpdate(c.id, e.target.value)}
-                            disabled={updatingId === c.id}
+                            disabled={updatingId === c.id || deletingId === c.id}
                           >
                             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
+                          <button
+                            onClick={() => openDeleteConfirm(c)}
+                            disabled={deletingId === c.id}
+                            className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 hover:bg-red-100 transition-all disabled:opacity-50"
+                            title="অভিযোগ ডিলিট করুন"
+                          >
+                            {deletingId === c.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -569,7 +608,7 @@ const AdminComplaints = () => {
                       className="flex-1 text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:border-emerald-500"
                       value={c.status}
                       onChange={(e) => handleStatusUpdate(c.id, e.target.value)}
-                      disabled={updatingId === c.id}
+                      disabled={updatingId === c.id || deletingId === c.id}
                     >
                       {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -578,6 +617,13 @@ const AdminComplaints = () => {
                       onClick={() => setSelectedComplaint(c)}
                     >
                       <ExternalLink size={16} />
+                    </button>
+                    <button 
+                      className="p-2 bg-red-50 text-red-600 rounded-lg border border-red-100 disabled:opacity-50"
+                      onClick={() => openDeleteConfirm(c)}
+                      disabled={deletingId === c.id}
+                    >
+                      {deletingId === c.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
                   </div>
                 </div>
@@ -697,19 +743,27 @@ const AdminComplaints = () => {
             </div>
             
             <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                 <div className="flex-1">
                   <label className="text-xs font-bold text-slate-500 mb-2 block">অবস্থা পরিবর্তন করুন</label>
                   <select 
                     className="w-full bg-white border border-slate-200 rounded-xl p-3 outline-none focus:border-emerald-500 font-medium text-sm"
                     value={selectedComplaint.status}
                     onChange={(e) => handleStatusUpdate(selectedComplaint.id, e.target.value)}
-                    disabled={updatingId === selectedComplaint.id}
+                    disabled={updatingId === selectedComplaint.id || deletingId === selectedComplaint.id}
                   >
                     {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
-                <div className="pt-6">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => openDeleteConfirm(selectedComplaint)}
+                    disabled={deletingId === selectedComplaint.id}
+                    className="px-5 py-3 bg-red-50 text-red-600 border border-red-100 font-bold rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {deletingId === selectedComplaint.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                    ডিলিট
+                  </button>
                   <button 
                     onClick={() => setSelectedComplaint(null)}
                     className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all"
@@ -718,6 +772,41 @@ const AdminComplaints = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-red-100 overflow-hidden">
+            <div className="p-6 text-center space-y-4">
+              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 size={30} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">আপনি কি ডিলিট করতে চান?</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  অভিযোগ নম্বর <span className="font-bold text-slate-900">{deleteTarget.complaint_id}</span> ডিলিট করলে আর রিকভার করা যাবে না।
+                </p>
+              </div>
+            </div>
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingId === deleteTarget.id}
+                className="flex-1 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 transition-all disabled:opacity-50"
+              >
+                বাতিল করুন
+              </button>
+              <button
+                onClick={handleDeleteComplaint}
+                disabled={deletingId === deleteTarget.id}
+                className="flex-1 px-5 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deletingId === deleteTarget.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                হ্যাঁ, ডিলিট করতে চাই
+              </button>
             </div>
           </div>
         </div>

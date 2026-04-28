@@ -39,6 +39,101 @@
   @apply bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
 }
 
+/* Home page motion */
+@keyframes soft-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes soft-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-home-fade-up {
+  animation: soft-fade-up 0.75s ease-out both;
+}
+
+.animate-home-slide-in {
+  animation: soft-slide-in 0.85s ease-out both;
+}
+
+.animate-home-float {
+  animation: gentle-float 5s ease-in-out infinite;
+}
+
+.animate-home-pulse {
+  animation: soft-pulse 2.8s ease-in-out infinite;
+}
+
+.home-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.home-delay-2 {
+  animation-delay: 0.22s;
+}
+
+.home-delay-3 {
+  animation-delay: 0.32s;
+}
+
+.home-delay-4 {
+  animation-delay: 0.42s;
+}
+
+.home-hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.home-hover-lift:hover {
+  transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-home-fade-up,
+  .animate-home-slide-in,
+  .animate-home-float,
+  .animate-home-pulse {
+    animation: none;
+  }
+
+  .home-hover-lift,
+  .home-hover-lift:hover {
+    transform: none;
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

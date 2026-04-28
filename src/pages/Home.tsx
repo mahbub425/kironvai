@@ -23,7 +23,7 @@ const Home = () => {
   const [loadingWorks, setLoadingWorks] = useState(true);
   const [socialCategories, setSocialCategories] = useState<{name_bn: string, icon: string, description_bn: string}[]>([]);
   const [galleryImages, setGalleryImages] = useState<{id: string, title: string, image_path: string, type: string}[]>([]);
-  const { get } = useHomeContent();
+  const { get, loading: loadingHomeContent } = useHomeContent();
 
   useEffect(() => {
     const fetchWorks = async () => {
@@ -74,9 +74,9 @@ const Home = () => {
     }
   };
 
-  // Determine hero image: prefer DB, fallback to local asset
-  const heroImageSrc = get('hero_image') || heroImg;
-  const aboutImageSrc = get('about_image') || heroImg;
+  // Avoid flashing the old static image before dynamic home content loads.
+  const heroImageSrc = loadingHomeContent ? '' : get('hero_image', heroImg);
+  const aboutImageSrc = loadingHomeContent ? '' : get('about_image', heroImg);
 
   return (
     <div className="flex flex-col">
@@ -85,10 +85,10 @@ const Home = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="flex-1 text-center lg:text-left space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold animate-home-fade-up animate-home-pulse">
                 {get('hero_tag', 'উন্নয়ন ও সেবার অঙ্গীকারে')}
               </div>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-tight animate-home-fade-up home-delay-1">
                 {(() => {
                   const title = get('hero_title', 'ভূরুঙ্গামারীর মানুষের পাশে, উন্নয়ন ও সেবার অঙ্গীকারে');
                   const parts = title.split(',');
@@ -98,21 +98,27 @@ const Home = () => {
                   return title;
                 })()}
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 max-w-2xl leading-relaxed mx-auto lg:mx-0">
+              <p className="text-lg md:text-xl text-slate-600 max-w-2xl leading-relaxed mx-auto lg:mx-0 animate-home-fade-up home-delay-2">
                 {get('hero_subtitle', 'আপনার এলাকার সমস্যা জানান এবং অভিযোগের বর্তমান অবস্থা সহজেই দেখুন।')}
               </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 justify-center lg:justify-start">
-                <Link to="/submit-complaint" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-200 w-full sm:w-auto justify-center">
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 justify-center lg:justify-start animate-home-fade-up home-delay-3">
+                <Link to="/submit-complaint" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-200 w-full sm:w-auto justify-center hover:-translate-y-1">
                   <MessageSquare size={20} /> অভিযোগ জমা দিন
                 </Link>
-                <Link to="/track-complaint" className="border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-50 px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 transition-all w-full sm:w-auto justify-center">
+                <Link to="/track-complaint" className="border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-50 px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 transition-all w-full sm:w-auto justify-center hover:-translate-y-1">
                   <Search size={20} /> আপনার অভিযোগের বর্তমান অবস্থা
                 </Link>
               </div>
             </div>
-            <div className="flex-1 relative">
+            <div className="flex-1 relative w-full max-w-sm md:max-w-md lg:max-w-[440px] xl:max-w-[500px] mx-auto lg:mx-0 animate-home-slide-in home-delay-2">
               <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
-                <img src={heroImageSrc} alt="Mahfuzul Islam Kiron" className="w-full h-auto object-cover aspect-[4/5]" onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=1000"; }} />
+                {heroImageSrc ? (
+                  <img src={heroImageSrc} alt="Mahfuzul Islam Kiron" className="w-full h-auto object-cover aspect-[4/5] animate-home-float" onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=1000"; }} />
+                ) : (
+                  <div className="w-full aspect-[4/5] flex items-center justify-center text-emerald-500">
+                    <Loader2 className="animate-spin" size={36} />
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-2xl shadow-xl hidden md:block">
                 <div className="flex items-center gap-3">
@@ -132,28 +138,28 @@ const Home = () => {
       <section className="py-16 bg-emerald-500">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
-            <div className="space-y-2">
+            <div className="space-y-2 animate-home-fade-up">
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <CheckCircle2 size={28} />
               </div>
               <p className="text-3xl md:text-4xl font-extrabold">{get('stat_resolved_complaints', '১,২৫০+')}</p>
               <p className="text-sm text-white/80 font-medium">{get('stat_resolved_label', 'সমাধানকৃত অভিযোগ')}</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 animate-home-fade-up home-delay-1">
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Building2 size={28} />
               </div>
               <p className="text-3xl md:text-4xl font-extrabold">{get('stat_total_projects', '৫০+')}</p>
               <p className="text-sm text-white/80 font-medium">{get('stat_projects_label', 'উন্নয়নমূলক প্রকল্প')}</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 animate-home-fade-up home-delay-2">
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Users size={28} />
               </div>
               <p className="text-3xl md:text-4xl font-extrabold">{get('stat_people_served', '১০,০০০+')}</p>
               <p className="text-sm text-white/80 font-medium">{get('stat_people_label', 'সেবা পেয়েছেন')}</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 animate-home-fade-up home-delay-3">
               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <TrendingUp size={28} />
               </div>
@@ -167,9 +173,15 @@ const Home = () => {
       {/* Leader Intro Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-6 max-w-5xl">
-          <div className="bg-slate-50 rounded-3xl p-8 md:p-12 border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8 items-center">
+          <div className="bg-slate-50 rounded-3xl p-8 md:p-12 border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8 items-center animate-home-fade-up home-hover-lift">
             <div className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white shadow-lg shrink-0">
-              <img src={aboutImageSrc} alt="Mahfuzul Islam Kiron" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=500"; }} />
+              {aboutImageSrc ? (
+                <img src={aboutImageSrc} alt="Mahfuzul Islam Kiron" className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=500"; }} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-emerald-500 bg-slate-100">
+                  <Loader2 className="animate-spin" size={28} />
+                </div>
+              )}
             </div>
             <div className="space-y-4 text-center md:text-left">
               <h2 className="text-2xl md:text-3xl font-black text-slate-900">
@@ -189,7 +201,7 @@ const Home = () => {
       {/* Development Works from DB */}
       <section className="py-20 bg-slate-50">
         <div className="container mx-auto px-4 md:px-6 text-center space-y-12">
-          <div className="space-y-4 max-w-2xl mx-auto">
+          <div className="space-y-4 max-w-2xl mx-auto animate-home-fade-up">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">উন্নয়নমূলক কাজ</h2>
             <p className="text-slate-600">এলাকার সার্বিক উন্নয়নে গৃহীত ও সম্পন্ন হওয়া গুরুত্বপূর্ণ কাজগুলো</p>
           </div>
@@ -201,7 +213,7 @@ const Home = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {devWorks.map((work) => (
-                <div key={work.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all group text-left flex flex-col">
+                <div key={work.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all group text-left flex flex-col animate-home-fade-up home-hover-lift">
                   {work.image_path && (
                     <div className="relative h-52 overflow-hidden bg-slate-100 shrink-0">
                       <img src={work.image_path} alt={work.title_bn} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -246,8 +258,8 @@ const Home = () => {
       {/* Social Works Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-6 text-center space-y-12">
-          <div className="space-y-4 max-w-2xl mx-auto">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="space-y-4 max-w-2xl mx-auto animate-home-fade-up">
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-home-pulse">
               <Users size={32} />
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">স্বেচ্ছাসেবী ও সামাজিক কাজ</h2>
@@ -256,7 +268,7 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto text-left">
             {socialCategories.map((item, i) => (
-              <Link to={`/social-works?category=${encodeURIComponent(item.name_bn)}`} key={i} className="p-8 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-100 hover:shadow-lg transition-all group block">
+              <Link to={`/social-works?category=${encodeURIComponent(item.name_bn)}`} key={i} className="p-8 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-100 hover:shadow-lg transition-all group block animate-home-fade-up home-hover-lift">
                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left">{item.icon}</div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{item.name_bn}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{item.description_bn}</p>
@@ -273,17 +285,17 @@ const Home = () => {
       </section>
 
       {/* Gallery Preview Section */}
-      {galleryImages.length > 0 && (
-        <section className="py-20 bg-slate-50">
-          <div className="container mx-auto px-4 md:px-6 text-center space-y-12">
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">গ্যালারি</h2>
-              <p className="text-slate-600">আমাদের এলাকার বিভিন্ন উন্নয়নমূলক ও স্বেচ্ছাসেবী কাজের কিছু স্থিরচিত্র</p>
-            </div>
+      <section className="py-20 bg-slate-50">
+        <div className="container mx-auto px-4 md:px-6 text-center space-y-12">
+          <div className="space-y-4 max-w-2xl mx-auto animate-home-fade-up">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">গ্যালারি</h2>
+            <p className="text-slate-600">আমাদের এলাকার বিভিন্ন উন্নয়নমূলক ও স্বেচ্ছাসেবী কাজের কিছু স্থিরচিত্র</p>
+          </div>
 
+          {galleryImages.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {galleryImages.map((img, index) => (
-                <Link to="/gallery" key={`${img.id}-${index}`} className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all aspect-square bg-slate-100 block">
+                <Link to="/gallery" key={`${img.id}-${index}`} className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all aspect-square bg-slate-100 block animate-home-fade-up home-hover-lift">
                   <img 
                     src={img.image_path} 
                     alt={img.title} 
@@ -299,20 +311,22 @@ const Home = () => {
                 </Link>
               ))}
             </div>
+          ) : (
+            <p className="text-slate-400 py-8 font-bold animate-home-fade-up">এখনো কোনো গ্যালারি ছবি যোগ করা হয়নি</p>
+          )}
 
-            <div className="pt-8">
-              <Link to="/gallery" className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white px-8 py-3 rounded-xl font-bold inline-flex items-center gap-2 transition-all">
-                সকল ছবি দেখুন <ArrowRight size={20} />
-              </Link>
-            </div>
+          <div className="pt-8">
+            <Link to="/gallery" className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white px-8 py-3 rounded-xl font-bold inline-flex items-center gap-2 transition-all">
+              সকল ছবি দেখুন <ArrowRight size={20} />
+            </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="bg-emerald-500 rounded-[3rem] p-8 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+          <div className="bg-emerald-500 rounded-[3rem] p-8 md:p-16 text-center text-white relative overflow-hidden shadow-2xl animate-home-fade-up home-hover-lift">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
             <div className="relative z-10 space-y-8 max-w-3xl mx-auto">
               <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">

@@ -7,7 +7,8 @@ import {
   Phone,
   Calendar,
   Loader2,
-  Undo2
+  Undo2,
+  Trash2
 } from 'lucide-react';
 
 interface Complaint {
@@ -33,6 +34,8 @@ const AdminResolvedComplaints = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Complaint | null>(null);
 
   const [upazilas, setUpazilas] = useState<any[]>([]);
   const [unions, setUnions] = useState<any[]>([]);
@@ -116,6 +119,31 @@ const AdminResolvedComplaints = () => {
       setComplaints(complaints.filter(c => c.id !== id));
     }
     setUpdatingId(null);
+  };
+
+  const openDeleteConfirm = (complaint: Complaint) => {
+    setDeleteTarget(complaint);
+  };
+
+  const handleDeleteComplaint = async () => {
+    if (!deleteTarget) return;
+
+    setDeletingId(deleteTarget.id);
+    const { error } = await supabase
+      .from('complaints')
+      .delete()
+      .eq('id', deleteTarget.id);
+
+    if (error) {
+      console.error(error);
+      window.alert(`অভিযোগ ডিলিট করা যায়নি: ${error.message}`);
+      setDeletingId(null);
+      return;
+    }
+
+    setComplaints(complaints.filter(c => c.id !== deleteTarget.id));
+    setDeleteTarget(null);
+    setDeletingId(null);
   };
 
   const clearFilters = () => {
@@ -297,14 +325,24 @@ const AdminResolvedComplaints = () => {
                       })}
                     </td>
                     <td className="p-4">
-                      <button 
-                        onClick={() => handleReopen(c.id)}
-                        disabled={updatingId === c.id}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
-                      >
-                        {updatingId === c.id ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
-                        Reopen
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleReopen(c.id)}
+                          disabled={updatingId === c.id || deletingId === c.id}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                        >
+                          {updatingId === c.id ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
+                          Reopen
+                        </button>
+                        <button
+                          onClick={() => openDeleteConfirm(c)}
+                          disabled={deletingId === c.id}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                        >
+                          {deletingId === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -350,24 +388,69 @@ const AdminResolvedComplaints = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-2 border-t border-slate-100">
                   <span className="px-2 py-1 bg-slate-100 rounded-md text-[10px] font-bold text-slate-600">
                     {c.problem_categories?.name_bn || '-'}
                   </span>
-                  <button 
-                    onClick={() => handleReopen(c.id)}
-                    disabled={updatingId === c.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
-                  >
-                    {updatingId === c.id ? <Loader2 size={12} className="animate-spin" /> : <Undo2 size={12} />}
-                    Reopen
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      onClick={() => handleReopen(c.id)}
+                      disabled={updatingId === c.id || deletingId === c.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                    >
+                      {updatingId === c.id ? <Loader2 size={12} className="animate-spin" /> : <Undo2 size={12} />}
+                      Reopen
+                    </button>
+                    <button 
+                      onClick={() => openDeleteConfirm(c)}
+                      disabled={deletingId === c.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                    >
+                      {deletingId === c.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-red-100 overflow-hidden">
+            <div className="p-6 text-center space-y-4">
+              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 size={30} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">আপনি কি ডিলিট করতে চান?</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  অভিযোগ নম্বর <span className="font-bold text-slate-900">{deleteTarget.complaint_id}</span> ডিলিট করলে আর রিকভার করা যাবে না।
+                </p>
+              </div>
+            </div>
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingId === deleteTarget.id}
+                className="flex-1 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 transition-all disabled:opacity-50"
+              >
+                বাতিল করুন
+              </button>
+              <button
+                onClick={handleDeleteComplaint}
+                disabled={deletingId === deleteTarget.id}
+                className="flex-1 px-5 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deletingId === deleteTarget.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                হ্যাঁ, ডিলিট করতে চাই
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

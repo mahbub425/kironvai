@@ -65,23 +65,23 @@ const Gallery = () => {
       </div>
 
       <div className="container mx-auto px-4">
-        <div className="flex justify-center mb-10">
-          <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 flex gap-1">
+        <div className="flex justify-start sm:justify-center mb-10 overflow-x-auto pb-4">
+          <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 flex flex-nowrap sm:flex-wrap gap-1 min-w-max">
             <button
               onClick={() => setFilter('all')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === 'all' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               সকল ছবি
             </button>
             <button
               onClick={() => setFilter('development')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === 'development' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${filter === 'development' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               উন্নয়নমূলক কাজ
             </button>
             <button
               onClick={() => setFilter('social')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === 'social' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${filter === 'social' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               স্বেচ্ছাসেবী কাজ
             </button>
