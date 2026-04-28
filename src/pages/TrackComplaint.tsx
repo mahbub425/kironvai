@@ -8,10 +8,12 @@ interface Location {
 }
 
 interface Complaint {
+  id: string;
   complaint_id: string;
   problem_details: string;
   status: string;
   created_at: string;
+  updated_at?: string;
   problem_categories: { name_bn: string };
   upazilas: { name_bn: string };
   unions: { name_bn: string };
@@ -82,6 +84,39 @@ const TrackComplaint = () => {
     fetchWards();
   }, [searchData.union_id]);
 
+  useEffect(() => {
+    const complaintIds = complaints.map((complaint) => complaint.id).filter(Boolean);
+    if (complaintIds.length === 0) return;
+
+    const channel = supabase
+      .channel(`public-complaint-tracking-${complaintIds.join('-')}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'complaints' },
+        (payload) => {
+          const updatedComplaint = payload.new as Partial<Complaint>;
+          if (!updatedComplaint.id || !complaintIds.includes(updatedComplaint.id)) return;
+
+          setComplaints((currentComplaints) =>
+            currentComplaints.map((complaint) =>
+              complaint.id === updatedComplaint.id
+                ? {
+                    ...complaint,
+                    status: updatedComplaint.status || complaint.status,
+                    updated_at: updatedComplaint.updated_at || complaint.updated_at,
+                  }
+                : complaint
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [complaints]);
+
     const handleSearch = async (e: React.FormEvent) => {
       e.preventDefault();
       setLoading(true);
@@ -103,10 +138,12 @@ const TrackComplaint = () => {
         const { data, error: searchError } = await supabase
           .from('complaints')
           .select(`
+            id,
             complaint_id,
             problem_details,
             status,
             created_at,
+            updated_at,
             problem_categories(name_bn),
             upazilas(name_bn),
             unions(name_bn),
@@ -116,10 +153,11 @@ const TrackComplaint = () => {
           .eq('upazila_id', searchData.upazila_id)
           .eq('union_id', searchData.union_id)
           .eq('ward_id', searchData.ward_id)
-          .order('created_at', { ascending: false });
+          .order('updated_at', { ascending: false })
+            .order('created_at', { ascending: false });
  
         if (searchError) throw searchError;
-        setComplaints(data as any || []);
+        setComplaints((data || []) as unknown as Complaint[]);
       } catch (err) {
         console.error(err);
         setError('তথ্য খুঁজতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।');

@@ -134,19 +134,45 @@ const AdminComplaints = () => {
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     setUpdatingId(id);
+    const updatedAt = new Date().toISOString();
     const { error } = await supabase
       .from('complaints')
       .update({ 
         status: newStatus,
-        updated_at: new Date().toISOString()
+        updated_at: updatedAt
       })
       .eq('id', id);
 
-    if (!error) {
-      setComplaints(complaints.map(c => c.id === id ? { ...c, status: newStatus } : c));
-      if (selectedComplaint?.id === id) {
-        setSelectedComplaint({ ...selectedComplaint, status: newStatus });
-      }
+    if (error) {
+      console.error(error);
+      window.alert(`Status update save hoyni: ${error.message}`);
+      setUpdatingId(null);
+      return;
+    }
+
+    const { data: savedComplaint, error: verifyError } = await supabase
+      .from('complaints')
+      .select(`
+        *,
+        problem_categories(name_bn),
+        upazilas(name_bn),
+        unions(name_bn),
+        wards(name_bn)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (verifyError || !savedComplaint || savedComplaint.status !== newStatus) {
+      console.error(verifyError);
+      window.alert('Status update save hoyni. Supabase SQL Editor-e fix_complaints_status_update_policy.sql file-er query run korun.');
+      setUpdatingId(null);
+      return;
+    }
+
+    const updatedComplaint = savedComplaint as Complaint;
+    setComplaints(complaints.map(c => c.id === id ? updatedComplaint : c));
+    if (selectedComplaint?.id === id) {
+      setSelectedComplaint(updatedComplaint);
     }
     setUpdatingId(null);
   };
