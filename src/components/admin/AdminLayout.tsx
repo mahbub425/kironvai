@@ -53,7 +53,7 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-x-hidden">
+    <div className="h-screen bg-slate-50 flex overflow-hidden">
       {/* Mobile Sidebar Backdrop */}
       {isSidebarOpen && (
         <div 
@@ -63,8 +63,8 @@ const AdminLayout = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`bg-slate-900 text-slate-300 transition-all duration-300 fixed lg:static inset-y-0 left-0 z-50 ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-0 lg:w-20 -translate-x-full lg:translate-x-0 overflow-hidden'}`}>
-        <div className="p-6 flex items-center justify-between">
+      <aside className={`bg-slate-900 text-slate-300 transition-all duration-300 fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 h-screen flex flex-col shrink-0 ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-0 lg:w-20 -translate-x-full lg:translate-x-0 overflow-hidden'}`}>
+        <div className="p-6 flex items-center justify-between shrink-0">
           <div className={`flex items-center gap-3 transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:opacity-0'}`}>
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold shrink-0">K1</div>
             <span className="font-bold text-white text-lg whitespace-nowrap">অ্যাডমিন প্যানেল</span>
@@ -82,7 +82,7 @@ const AdminLayout = () => {
           </button>
         </div>
 
-        <nav className="mt-6 px-4 space-y-2 overflow-y-auto max-h-[calc(100vh-160px)]">
+        <nav className="mt-6 px-4 pb-4 space-y-2 overflow-y-auto flex-1 min-h-0">
           {menuItems.map((item) => (
             item.subItems ? (
               <div key={item.name} className="space-y-1 mb-2">
@@ -135,7 +135,7 @@ const AdminLayout = () => {
           ))}
         </nav>
 
-        <div className="absolute bottom-8 left-0 w-full px-4">
+        <div className="shrink-0 border-t border-slate-800 p-4">
           <button 
             onClick={handleLogout}
             className="flex items-center gap-4 p-4 w-full rounded-xl hover:bg-red-500/10 hover:text-red-500 transition-all text-slate-400 font-bold"
@@ -147,9 +147,9 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 flex flex-col w-full">
+      <main className="flex-1 min-w-0 flex flex-col w-full h-screen min-h-0">
         {/* Header */}
-        <header className="bg-white border-b border-slate-200 p-4 sticky top-0 z-30">
+        <header className="bg-white border-b border-slate-200 p-4 shrink-0 z-30">
           <div className="flex items-center justify-between gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
               <Menu size={24} />
@@ -166,7 +166,7 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <div className="p-4 md:p-8 overflow-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-8">
           <Outlet />
         </div>
       </main>
