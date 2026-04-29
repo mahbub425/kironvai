@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-const DEFAULT_SITE_TITLE = 'কুড়িগ্রাম-১ জনসেবা ও অভিযোগ ব্যবস্থাপনা';
-const DEFAULT_SHARE_DESCRIPTION = 'কুড়িগ্রাম-১ এলাকার জনসেবা, অভিযোগ ব্যবস্থাপনা, উন্নয়নমূলক কাজ এবং স্বেচ্ছাসেবী কার্যক্রমের ডিজিটাল প্ল্যাটফর্ম।';
+const DEFAULT_SITE_TITLE = 'ভূরুঙ্গামারী জনসেবা ও অভিযোগ ব্যবস্থাপনা';
+const DEFAULT_SHARE_DESCRIPTION = 'ভূরুঙ্গামারী বাসীর জনসেবা, অভিযোগ ব্যবস্থাপনা, উন্নয়নমূলক কাজ এবং স্বেচ্ছাসেবী কার্যক্রমের ডিজিটাল প্ল্যাটফর্ম।';
 const DEFAULT_SHARE_IMAGE = '/favicon.svg';
 const DEFAULT_SITE_URL = typeof window !== 'undefined' ? window.location.origin : '';
 
