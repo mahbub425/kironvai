@@ -24,12 +24,48 @@ import AdminLayout from './components/admin/AdminLayout';
 import { useEffect } from 'react';
 import { useSiteSettings } from './hooks/useSiteSettings';
 
+const setMetaContent = (selector: string, content: string) => {
+  const element = document.head.querySelector<HTMLMetaElement>(selector);
+  if (element) {
+    element.content = content;
+  }
+};
+
+const setLinkHref = (selector: string, href: string) => {
+  const element = document.head.querySelector<HTMLLinkElement>(selector);
+  if (element) {
+    element.href = href;
+  }
+};
+
+const toAbsoluteUrl = (url: string) => {
+  try {
+    return new URL(url, window.location.origin).href;
+  } catch {
+    return url;
+  }
+};
+
 function App() {
-  const { siteTitle } = useSiteSettings();
+  const { siteTitle, shareDescription, shareImage, siteUrl } = useSiteSettings();
 
   useEffect(() => {
+    const absoluteShareImage = toAbsoluteUrl(shareImage);
+    const canonicalUrl = toAbsoluteUrl(siteUrl || window.location.origin);
+
     document.title = siteTitle;
-  }, [siteTitle]);
+    setMetaContent('meta[name="title"]', siteTitle);
+    setMetaContent('meta[property="og:site_name"]', siteTitle);
+    setMetaContent('meta[property="og:title"]', siteTitle);
+    setMetaContent('meta[name="twitter:title"]', siteTitle);
+    setMetaContent('meta[name="description"]', shareDescription);
+    setMetaContent('meta[property="og:description"]', shareDescription);
+    setMetaContent('meta[name="twitter:description"]', shareDescription);
+    setMetaContent('meta[property="og:url"]', canonicalUrl);
+    setMetaContent('meta[property="og:image"]', absoluteShareImage);
+    setMetaContent('meta[name="twitter:image"]', absoluteShareImage);
+    setLinkHref('link[rel="canonical"]', canonicalUrl);
+  }, [siteTitle, shareDescription, shareImage, siteUrl]);
 
   return (
     <Routes>
