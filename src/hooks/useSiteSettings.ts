@@ -1,21 +1,50 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-const DEFAULT_SITE_TITLE = 'ভূরুঙ্গামারী জনসেবা ও অভিযোগ ব্যবস্থাপনা';
-const DEFAULT_SHARE_DESCRIPTION = 'ভূরুঙ্গামারী বাসীর জনসেবা, অভিযোগ ব্যবস্থাপনা, উন্নয়নমূলক কাজ এবং স্বেচ্ছাসেবী কার্যক্রমের ডিজিটাল প্ল্যাটফর্ম।';
+const DEFAULT_SITE_TITLE = 'কুড়িগ্রাম-১ জনসেবা ও অভিযোগ ব্যবস্থাপনা';
+const DEFAULT_SHARE_DESCRIPTION =
+  'কুড়িগ্রাম-১ এলাকার জনসেবা, অভিযোগ ব্যবস্থাপনা, উন্নয়নমূলক কাজ এবং স্বেচ্ছাসেবী কার্যক্রমের ডিজিটাল প্ল্যাটফর্ম।';
 const DEFAULT_SHARE_IMAGE = '/favicon.svg';
 const DEFAULT_SITE_URL = typeof window !== 'undefined' ? window.location.origin : '';
+const SETTINGS_CACHE_KEY = 'kironvai_site_settings';
 
 type AppSettingRow = {
   setting_key: string;
   setting_value: string | null;
 };
 
+type SiteSettings = {
+  siteTitle: string;
+  shareDescription: string;
+  shareImage: string;
+  siteUrl: string;
+};
+
+const defaultSettings: SiteSettings = {
+  siteTitle: DEFAULT_SITE_TITLE,
+  shareDescription: DEFAULT_SHARE_DESCRIPTION,
+  shareImage: DEFAULT_SHARE_IMAGE,
+  siteUrl: DEFAULT_SITE_URL,
+};
+
+const getCachedSettings = () => {
+  if (typeof window === 'undefined') return defaultSettings;
+
+  try {
+    const cached = window.localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (!cached) return defaultSettings;
+
+    return {
+      ...defaultSettings,
+      ...(JSON.parse(cached) as Partial<SiteSettings>),
+    };
+  } catch {
+    return defaultSettings;
+  }
+};
+
 export const useSiteSettings = () => {
-  const [siteTitle, setSiteTitle] = useState(DEFAULT_SITE_TITLE);
-  const [shareDescription, setShareDescription] = useState(DEFAULT_SHARE_DESCRIPTION);
-  const [shareImage, setShareImage] = useState(DEFAULT_SHARE_IMAGE);
-  const [siteUrl, setSiteUrl] = useState(DEFAULT_SITE_URL);
+  const [settings, setSettings] = useState(getCachedSettings);
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = async () => {
@@ -26,17 +55,21 @@ export const useSiteSettings = () => {
       .returns<AppSettingRow[]>();
 
     if (!error && data) {
-      const settings = new Map(data.map((row) => [row.setting_key, row.setting_value?.trim() || '']));
-      const nextTitle = settings.get('site_title');
-      const nextDescription = settings.get('share_description');
-      const nextImage = settings.get('share_image');
-      const nextSiteUrl = settings.get('site_url');
+      const rows = new Map(data.map((row) => [row.setting_key, row.setting_value?.trim() || '']));
+      const nextSettings = {
+        siteTitle: rows.get('site_title') || DEFAULT_SITE_TITLE,
+        shareDescription: rows.get('share_description') || DEFAULT_SHARE_DESCRIPTION,
+        shareImage: rows.get('share_image') || DEFAULT_SHARE_IMAGE,
+        siteUrl: rows.get('site_url') || DEFAULT_SITE_URL,
+      };
 
-      setSiteTitle(nextTitle || DEFAULT_SITE_TITLE);
-      setShareDescription(nextDescription || DEFAULT_SHARE_DESCRIPTION);
-      setShareImage(nextImage || DEFAULT_SHARE_IMAGE);
-      setSiteUrl(nextSiteUrl || DEFAULT_SITE_URL);
+      setSettings(nextSettings);
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(nextSettings));
+      }
     }
+
     setLoading(false);
   };
 
@@ -46,10 +79,10 @@ export const useSiteSettings = () => {
 
   return {
     loading,
-    siteTitle,
-    shareDescription,
-    shareImage,
-    siteUrl,
+    siteTitle: settings.siteTitle,
+    shareDescription: settings.shareDescription,
+    shareImage: settings.shareImage,
+    siteUrl: settings.siteUrl,
     defaultSiteTitle: DEFAULT_SITE_TITLE,
     defaultShareDescription: DEFAULT_SHARE_DESCRIPTION,
     defaultShareImage: DEFAULT_SHARE_IMAGE,

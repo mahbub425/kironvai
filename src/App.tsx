@@ -21,7 +21,7 @@ import AdminSettings from './pages/admin/Settings';
 import AdminHomeContent from './pages/admin/HomeContent';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import AdminLayout from './components/admin/AdminLayout';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useSiteSettings } from './hooks/useSiteSettings';
 
 const setMetaContent = (selector: string, content: string) => {
@@ -49,7 +49,7 @@ const toAbsoluteUrl = (url: string) => {
 function App() {
   const { siteTitle, shareDescription, shareImage, siteUrl } = useSiteSettings();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const absoluteShareImage = toAbsoluteUrl(shareImage);
     const canonicalUrl = toAbsoluteUrl(siteUrl || window.location.origin);
 
