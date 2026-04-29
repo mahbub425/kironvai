@@ -21,3 +21,6 @@ CREATE POLICY "Allow admin update for social_works" ON social_works FOR UPDATE T
 
 DROP POLICY IF EXISTS "Allow admin delete for social_works" ON social_works;
 CREATE POLICY "Allow admin delete for social_works" ON social_works FOR DELETE TO authenticated USING (true);
+
+-- Refresh PostgREST schema cache so newly added columns are immediately available.
+NOTIFY pgrst, 'reload schema';
