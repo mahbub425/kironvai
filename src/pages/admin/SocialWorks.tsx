@@ -39,6 +39,7 @@ const AdminSocialWorks = () => {
   const [formData, setFormData] = useState({ ...emptyForm });
   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
   const [uploading, setUploading] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   // Location & Category states
   const [upazilas, setUpazilas] = useState<Location[]>([]);
@@ -93,17 +94,35 @@ const AdminSocialWorks = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const payload = { ...formData };
-    // Remove empty foreign keys
-    if (!payload.upazila_id) delete (payload as any).upazila_id;
-    if (!payload.union_id) delete (payload as any).union_id;
-    if (!payload.ward_id) delete (payload as any).ward_id;
+    setSaveError('');
 
-    if (editingWork) {
-      await supabase.from('social_works').update(payload).eq('id', editingWork.id);
-    } else {
-      await supabase.from('social_works').insert([payload]);
+    const payload: Record<string, unknown> = {
+      title_bn: formData.title_bn,
+      description_bn: formData.description_bn,
+      work_type: formData.work_type,
+      work_date: formData.work_date || null,
+      image_path: formData.image_path.trim() || null,
+      location_text_bn: formData.location_text_bn.trim() || null,
+      is_featured: formData.is_featured,
+      sort_order: formData.sort_order,
+    };
+
+    if (formData.upazila_id) payload.upazila_id = formData.upazila_id;
+    if (formData.union_id) payload.union_id = formData.union_id;
+    if (formData.ward_id) payload.ward_id = formData.ward_id;
+    if (formData.gram_moholla.trim()) payload.gram_moholla = formData.gram_moholla.trim();
+
+    const { error } = editingWork
+      ? await supabase.from('social_works').update(payload).eq('id', editingWork.id)
+      : await supabase.from('social_works').insert([payload]);
+
+    if (error) {
+      console.error('Failed to save social work:', error);
+      setSaveError(error.message);
+      setSaving(false);
+      return;
     }
+
     setIsModalOpen(false);
     setEditingWork(null);
     setFormData({ ...emptyForm });
@@ -124,7 +143,7 @@ const AdminSocialWorks = () => {
           <h1 className="text-2xl font-black text-slate-900">স্বেচ্ছাসেবী কাজ</h1>
           <p className="text-slate-500 font-medium">এলাকার সামাজিক ও স্বেচ্ছাসেবী কাজের তালিকা ম্যানেজ করুন</p>
         </div>
-        <button onClick={() => { setEditingWork(null); setFormData({ ...emptyForm }); setIsModalOpen(true); }} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all">
+        <button onClick={() => { setEditingWork(null); setFormData({ ...emptyForm }); setSaveError(''); setIsModalOpen(true); }} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all">
           <Plus size={20} /> নতুন কাজ যোগ করুন
         </button>
       </div>
@@ -169,6 +188,7 @@ const AdminSocialWorks = () => {
                     is_featured: w.is_featured, sort_order: w.sort_order,
                     upazila_id: w.upazila_id || '', union_id: w.union_id || '', ward_id: w.ward_id || '', gram_moholla: w.gram_moholla || ''
                   });
+                  setSaveError('');
                   setIsModalOpen(true);
                 }} className="p-2 hover:bg-slate-100 text-slate-400 hover:text-blue-500 rounded-lg transition-all">
                   <Edit2 size={16} />
@@ -192,6 +212,12 @@ const AdminSocialWorks = () => {
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {saveError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                  Save failed: {saveError}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">কাজের শিরোনাম *</label>
                 <input required type="text" placeholder="যেমন: শীতবস্ত্র বিতরণ" className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" value={formData.title_bn} onChange={(e) => setFormData({...formData, title_bn: e.target.value})} />

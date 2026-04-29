@@ -9,8 +9,22 @@ const AdminSettings = () => {
   const [error, setError] = useState('');
   const [savingSystem, setSavingSystem] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const { siteTitle, defaultSiteTitle, loading, refetch } = useSiteSettings();
+  const {
+    siteTitle,
+    shareDescription,
+    shareImage,
+    siteUrl,
+    defaultSiteTitle,
+    defaultShareDescription,
+    defaultShareImage,
+    defaultSiteUrl,
+    loading,
+    refetch,
+  } = useSiteSettings();
   const [siteTitleInput, setSiteTitleInput] = useState(defaultSiteTitle);
+  const [shareDescriptionInput, setShareDescriptionInput] = useState(defaultShareDescription);
+  const [shareImageInput, setShareImageInput] = useState(defaultShareImage);
+  const [siteUrlInput, setSiteUrlInput] = useState(defaultSiteUrl);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -18,8 +32,13 @@ const AdminSettings = () => {
   });
 
   useEffect(() => {
-    if (!loading) setSiteTitleInput(siteTitle);
-  }, [loading, siteTitle]);
+    if (!loading) {
+      setSiteTitleInput(siteTitle);
+      setShareDescriptionInput(shareDescription);
+      setShareImageInput(shareImage);
+      setSiteUrlInput(siteUrl);
+    }
+  }, [loading, shareDescription, shareImage, siteTitle, siteUrl]);
 
   const showSaved = () => {
     setSaved(true);
@@ -37,8 +56,16 @@ const AdminSettings = () => {
     setError('');
 
     const nextTitle = siteTitleInput.trim();
+    const nextShareDescription = shareDescriptionInput.trim();
+    const nextShareImage = shareImageInput.trim();
+    const nextSiteUrl = siteUrlInput.trim().replace(/\/$/, '');
     if (!nextTitle) {
       setError('ব্রাউজার ট্যাবের লেখা খালি রাখা যাবে না।');
+      return;
+    }
+
+    if (!nextShareDescription) {
+      setError('লিংক শেয়ার করার বিবরণ খালি রাখা যাবে না।');
       return;
     }
 
@@ -46,11 +73,28 @@ const AdminSettings = () => {
     const { error: saveError } = await supabase
       .from('app_settings')
       .upsert(
-        {
-          setting_key: 'site_title',
-          setting_value: nextTitle,
-          updated_at: new Date().toISOString(),
-        },
+        [
+          {
+            setting_key: 'site_title',
+            setting_value: nextTitle,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            setting_key: 'share_description',
+            setting_value: nextShareDescription,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            setting_key: 'share_image',
+            setting_value: nextShareImage || defaultShareImage,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            setting_key: 'site_url',
+            setting_value: nextSiteUrl || defaultSiteUrl,
+            updated_at: new Date().toISOString(),
+          },
+        ],
         { onConflict: 'setting_key' }
       );
 
@@ -305,6 +349,42 @@ const AdminSettings = () => {
                   <p className="text-xs text-slate-400">বর্তমান ট্যাব প্রিভিউ: {siteTitleInput || defaultSiteTitle}</p>
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">লিংক শেয়ার বিবরণ</label>
+                  <textarea
+                    rows={4}
+                    value={shareDescriptionInput}
+                    onChange={(e) => setShareDescriptionInput(e.target.value)}
+                    placeholder={defaultShareDescription}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-400">Facebook, WhatsApp বা Messenger-এ লিংক দিলে এই বিবরণ দেখা যাবে।</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">লিংক শেয়ার ছবি URL</label>
+                  <input
+                    type="url"
+                    value={shareImageInput}
+                    onChange={(e) => setShareImageInput(e.target.value)}
+                    placeholder="https://example.com/share-image.jpg"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-400">ফাঁকা রাখলে ডিফল্ট favicon ব্যবহার হবে। ভালো preview-এর জন্য public HTTPS image URL দিন।</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">ওয়েবসাইট URL</label>
+                  <input
+                    type="url"
+                    value={siteUrlInput}
+                    onChange={(e) => setSiteUrlInput(e.target.value)}
+                    placeholder="https://your-domain.com"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-400">Canonical URL এবং link share URL হিসেবে ব্যবহার হবে। শেষে slash না দিলেও চলবে।</p>
+                </div>
+
                 <div className="pt-2">
                   <button
                     type="submit"
@@ -312,7 +392,7 @@ const AdminSettings = () => {
                     className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all disabled:opacity-50"
                   >
                     {savingSystem ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-                    সাইট টাইটেল সেভ করুন
+                    সিস্টেম সেটিংস সেভ করুন
                   </button>
                 </div>
               </form>
